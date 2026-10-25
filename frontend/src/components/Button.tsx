@@ -1,12 +1,13 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 type ButtonProp = {
     children: ReactNode,
-    isDark?: boolean
+    isDark?: boolean,
+    prop: ComponentProps<'button'>;
 };
 
 
-const Button = ({children, isDark}: ButtonProp) => {
+const Button = ({children, isDark, ...rest}: ButtonProp) => {
     let clssName = "border-[.2em] py-[.5em] px-[1.5em] rounded-[.5em] font-bold z-30 relative -translate-[.3em] bg-cream_90 active:translate-0 transition-all hover:-translate-[.2em]";
     let shadowClass = "w-full h-full bg-dark_15 absolute top-0 left-0 rounded-[.5em] z-20";
     if (isDark) {
@@ -18,7 +19,10 @@ const Button = ({children, isDark}: ButtonProp) => {
         shadowClass += " bg-dark_15";
     }
     return (
-        <button className="cursor-pointer relative">
+        <button 
+            className="cursor-pointer relative"
+            {...rest.prop}
+        >
             <div className={clssName}>
                 {children}
             </div>
