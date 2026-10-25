@@ -12,14 +12,14 @@ Spark stores ideas and comments, embeds ideas as vectors, and clusters them so r
 | Database | PostgreSQL + [pgvector](https://github.com/pgvector/pgvector), SQLAlchemy, psycopg 3 |
 | Migrations | Alembic |
 | ML / clustering | NumPy, scikit-learn, UMAP, HDBSCAN, joblib |
-| LLMs | OpenAI |
+| LLMs | OpenAI, Anthropic |
 | Tooling | [uv](https://docs.astral.sh/uv/) for dependency management |
 
 ## Prerequisites
 
 - Python 3.12 or 3.13 (a C compiler may be needed if `hdbscan` has no prebuilt wheel for your Python version; pinning 3.12 with `uv python pin 3.12` is the easy fix)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- Docker (for local Postgres), or any Postgres instance with the pgvector extension available
+- [Docker](https://docs.docker.com/get-docker/) with Docker Compose (runs Postgres + pgvector)
 - An OpenAI API key and an Anthropic API key
 
 ## Getting started
@@ -32,15 +32,25 @@ cd Spark/backend
 uv sync
 ```
 
-### 2. Start Postgres with pgvector
+### 2. Start Postgres with Docker Compose
+
+From the repo root:
 
 ```bash
-docker run -d --name spark-db \
-  -e POSTGRES_USER=app \
-  -e POSTGRES_PASSWORD=app \
-  -e POSTGRES_DB=connect \
-  -p 5433:5432 \
-  pgvector/pgvector:pg16
+docker compose up -d
+docker compose ps
+```
+
+The database service should show as running (or healthy). Postgres is exposed on `localhost:5433` with user `app`, password `app`, and database `connect`.
+
+The `vector` extension is enabled by the first Alembic migration, so there is nothing else to set up.
+
+To stop or reset it:
+
+```bash
+docker compose stop        # stop, keep data
+docker compose down        # remove containers, keep data volume
+docker compose down -v     # remove containers AND delete all data
 ```
 
 ### 3. Configure environment variables
@@ -77,6 +87,7 @@ The API is served at http://localhost:8000 and interactive docs at http://localh
 
 ```
 Spark/
+├── docker-compose.yml      # Postgres + pgvector
 └── backend/
     ├── app/                # FastAPI application (models, routes, DB session)
     ├── migrations/         # Alembic environment and versions
@@ -129,7 +140,8 @@ uv run alembic upgrade head
 | Problem | Fix |
 | --- | --- |
 | `No module named 'psycopg2'` | `DATABASE_URL` must start with `postgresql+psycopg://` so SQLAlchemy uses psycopg 3. |
-| `type "vector" does not exist` | Use the `pgvector/pgvector` image and make sure the migration runs `CREATE EXTENSION IF NOT EXISTS vector` first. |
+| `type "vector" does not exist` | The database image must include pgvector (e.g. `pgvector/pgvector:pg16`), and the first migration must run `CREATE EXTENSION IF NOT EXISTS vector` before creating tables. |
+| `connection refused` on port 5433 | The container isn't running. Start it with `docker compose up -d` and check `docker compose ps`. |
 | `NameError: name 'pgvector' is not defined` in a migration | Add `import pgvector.sqlalchemy` to the migration file. |
 | Autogenerate wants to drop your tables | Your models are not imported in `env.py`, or the database has tables from outside Alembic. |
 | `zsh: no matches found: uvicorn[standard]` | Quote extras: `uv add "uvicorn[standard]"`. |
