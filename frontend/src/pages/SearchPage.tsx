@@ -19,7 +19,8 @@ export type Idea = {
     description: string,
     author_name: string,
     github_url: string,
-    created_at: string
+    created_at: string,
+    comment_count: number
 };
 
 const SearchPage = () => {
@@ -85,6 +86,7 @@ const SearchPage = () => {
     useEffect(() => {
         fetchIdea()
         .then(ideas => {
+            console.log(ideas)
             setIdeas(ideas);
         });
     }, []);
@@ -131,7 +133,7 @@ const SearchPage = () => {
                     initial_zoom={0.5}
                 >
                 {nodes.map(node => (
-                    <Node {...node} key={node.id}/>
+                    <Node {...node} key={node.id} r={node.r}/>
                 ))}
                 </SvgContainer>
             </ChosenIdContext>

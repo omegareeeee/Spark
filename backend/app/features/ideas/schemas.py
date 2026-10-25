@@ -24,6 +24,7 @@ class IdeaOut(BaseModel):
     y: float | None = None
     cluster_id: int | None = None
     created_at: datetime
+    comment_count: int = 0
 
 class CommentIn(BaseModel):
     author_name: str = Field(min_length=1, max_length=80)

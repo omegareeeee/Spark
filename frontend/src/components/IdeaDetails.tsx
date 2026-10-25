@@ -19,8 +19,9 @@ const IdeaDetails = ({title, author_name, created_at, description, github_url, i
     const [input, setInput] = useState("");
 
     useEffect(() => {
-        fetchComments
-    }, []);
+        fetchComments(id)
+        .then(comments => setComments(comments));
+    }, [id]);
     
     return (
         <div className="grow bg-cream_90 max-w-[25rem] border-[.3em] border-dark_15 rounded-tl-[1em] rounded-bl-[1em] overflow-scroll"
@@ -71,7 +72,7 @@ const IdeaDetails = ({title, author_name, created_at, description, github_url, i
                                             iid: id
                                         });
                                         const clone = structuredClone(comments);
-                                        clone.push(comment);
+                                        clone.unshift(comment);
                                         setComments(clone);
                                     }
                                 }
@@ -82,14 +83,14 @@ const IdeaDetails = ({title, author_name, created_at, description, github_url, i
                     </div>
                     
                 </div>
-                <div>
+            </div>
+            <div className="flex flex-col">
                     {comments.map(comment => (
-                      <div className="flex flex-col gap-4">
-                        <h1>{comment.author_name}</h1>
+                      <div className="flex flex-col gap-2 p-4 border-b-[.2em]">
+                        <h1 className="font-bold">{comment.author_name}</h1>
                         <p>{comment.text}</p>
                       </div>  
                     ))}
-                </div>
             </div>
         </div>
     );
