@@ -9,6 +9,7 @@ from app.db.base import Base
 class Idea(Base):
     __tablename__ = "ideas"
 
+    author_name: Mapped[str] = mapped_column(Text)
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     # person_id: Mapped[UUID] = mapped_column(ForeignKey("person.id", ondelete="CASCADE"),nullable=True)
     title: Mapped[str] = mapped_column(Text)
@@ -18,6 +19,9 @@ class Idea(Base):
     x: Mapped[float | None]
     y: Mapped[float | None]
     cluster_id: Mapped[int | None] = mapped_column(ForeignKey("clusters.id"), nullable=True)
+    like_count: Mapped[int] = mapped_column(default=0, server_default="0")
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     # person: Mapped["Person"] = relationship(back_populates="ideas")
+
+    
