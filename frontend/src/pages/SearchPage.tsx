@@ -3,6 +3,7 @@ import AddModel from "../components/AddModel";
 import Button from "../components/Button";
 import SearchComp from "../components/SearchComp";
 import gsap from "gsap";
+import SvgContainer from "../components/SvgContainer";
 
 const SearchPage = () => {
     const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -44,6 +45,19 @@ const SearchPage = () => {
                     closeModel={() => setShowAddModal(false)}
                />
             </div>
+            <SvgContainer
+                xMin={0}
+                yMin={0}
+                initial_zoom={0.5}
+            >
+                <rect
+                    x={0}
+                    y={0}
+                    width={100}
+                    height={100}
+                    fill="red"
+                />
+            </SvgContainer>
         </div>
     );
 };
