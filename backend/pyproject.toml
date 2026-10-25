@@ -19,5 +19,6 @@ dependencies = [
     "sentence-transformers>=6.2.0",
     "sqlalchemy>=2.1.6",
     "umap-learn>=0.5.12",
+    "torch>=2.11,<2.12",
     "uvicorn[standard]>=0.54.0",
 ]
