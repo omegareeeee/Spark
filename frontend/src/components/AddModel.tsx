@@ -3,6 +3,7 @@ import UserInput from "./UserInput";
 import Button from "./Button";
 import addIdea from "../utils/addIdea";
 import IdeasContext from "../contexts/IdeasContext";
+import type { Idea } from "../pages/SearchPage";
 
 type AddModalProp = {
     closeModel: () => void
@@ -29,7 +30,7 @@ const AddModel = ({closeModel}: AddModalProp) => {
         });
         const clone = structuredClone(ideaContext?.ideas);
         clone?.push(newIdea);
-        ideaContext?.handleIdeasChange(clone);
+        ideaContext?.handleIdeasChange(clone as Idea[]);
         setIsLoading(false);
         
     };    
@@ -51,30 +52,35 @@ const AddModel = ({closeModel}: AddModalProp) => {
                     handleValueChange={setName}
                     placeHolder="Your name"
                     isLargeText={false}
+                    forComment={false}
                 />
                 <UserInput
                     value={linkedin}
                     handleValueChange={setLinkedin}
                     placeHolder="Linkedin"
                     isLargeText={false}
+                     forComment={false}
                 />
                 <UserInput
                     value={idea}
                     handleValueChange={setIdea}
                     placeHolder="idea's title"
                     isLargeText={false}
+                     forComment={false}
                 />
                 <UserInput
                     value={des}
                     handleValueChange={setDes}
                     placeHolder="Description of your idea..."
                     isLargeText
+                     forComment={false}
                 />
                 <UserInput
                     value={github}
                     handleValueChange={setGitHub}
                     placeHolder="GitHub repo (Optional)"
                     isLargeText={false}
+                     forComment={false}
                 />
                 <Button
                     isDark
