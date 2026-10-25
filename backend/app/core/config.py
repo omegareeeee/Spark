@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.environ("DATABASE_URL")
+DATABASE_URL = os.environ["DATABASE_URL"]
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN")
 
 EMBED_MODEL = "text-embedding-3-small"
