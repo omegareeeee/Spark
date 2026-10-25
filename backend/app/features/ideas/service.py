@@ -1,12 +1,21 @@
 import os
-from uuid import UUID, uuid4
-from sqlalchemy import select
+from uuid import UUID
+
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
-from app.features.ideas.schemas import IdeaIn
+from app.features.ideas.schemas import IdeaIn, CommentIn
+
 
 from app.core.embeddings import embed
 
 from app.models import Idea
+from app.models import Comment
+
+from app.features.map import layout
+from app.features.cluster.service import assign_cluster
+
+
+
 
 class service():
 
@@ -16,17 +25,15 @@ class service():
 
 
     def create_idea(self, db: Session, data: IdeaIn):
-        vec = embed(f"{data.title}. Description{data.description}")
+        vec = embed(f"Title: {data.title}\nDescription: {data.description}")
 
-        x,y = 0,0
-        cluster_id = 1
         #TODO IMPLEMENT LAYOUT AND TRANSFORM
-        # x = y = None
+        x = y = None
 
-        # if os.path.exists(layout.MODEL_PATH):
-        #     x,y = layout.transform(vec)
+        if os.path.exists(layout.MODEL_PATH):
+            x,y = layout.transform(vec)
 
-        # cluster_id = assign_cluster(db, vec)
+        cluster_id = assign_cluster(db, vec)
 
         idea = Idea(
             # person_id=person_id,
@@ -34,9 +41,10 @@ class service():
             description=data.description,
             github_url=data.github_url,
             idea_embedding=vec,
+            author_name=data.author_name,
             x=x,
             y=y,
-            cluster_id=None,
+            cluster_id=cluster_id,
         )
 
         db.add(idea)
@@ -45,13 +53,16 @@ class service():
 
         return self.get_idea(db, idea.id)
 
+    
+    def get_all_ideas(self, db: Session):
+        statement = select(Idea).order_by(Idea.created_at.desc())
+        return db.scalars(statement).all()
 
-#  id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-#     person_id: Mapped[UUID] = mapped_column(ForeignKey("person.id", ondelete="CASCADE"))
-#     text: Mapped[str] = mapped_column(Text)
-#     idea_embedding = mapped_column(Vector(EMBED_DIM))
-#     github_url: Mapped[str | None] = mapped_column(Text, nullable=True)
-#     x: Mapped[float | None]
-#     y: Mapped[float | None]
-#     cluster_id: Mapped[int | None] = mapped_column(ForeignKey("clusters.id"))
-#     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    def like_idea(self, db: Session, idea_id: UUID):
+        result = db.execute(
+            update(Idea).where(Idea.id == idea_id)
+            .values(like_count=Idea.like_count + 1)
+            .returning(Idea.like_count)
+        ).scalar()
+        db.commit()
+        return result 

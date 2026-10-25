@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
+from uuid import UUID
 
 class CommentIn(BaseModel):
     author_name: str = Field(min_length=1, max_length=80)
@@ -9,7 +10,7 @@ class CommentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)  # lets it read DB objects directly
 
     id: int
-    idea_id: int
+    idea_id: UUID
     author_name: str
     text: str
     created_at: datetime

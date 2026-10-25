@@ -10,12 +10,12 @@ from app.models.comment import Comment
 from app.features.comments.schemas import CommentIn, CommentOut
 from app.db.session import get_db
 
-router = APIRouter()
+router = APIRouter(prefix="/ideas", tags=["Comments"])
 db_session = Annotated[Session, Depends(get_db)]
 
 
 @router.get("/{idea_id}/comments", response_model=list[CommentOut])
-def list_comments(idea_id: int, db: Session = Depends(get_db)):
+def list_comments(idea_id: UUID, db: Session = Depends(get_db)):
     if not db.get(Idea, idea_id):
         raise HTTPException(404, "Idea not found")
     return (
@@ -25,7 +25,7 @@ def list_comments(idea_id: int, db: Session = Depends(get_db)):
         .all()
     )
 
-@router.post("/ideas/{id}/comments", response_model=CommentIn,)
+@router.post("/{idea_id}/comments", response_model=CommentOut,)
 def add_comments(idea_id: UUID, data: CommentIn, db:db_session):
 
     if not db.get(Idea, idea_id):
@@ -39,6 +39,6 @@ def add_comments(idea_id: UUID, data: CommentIn, db:db_session):
 
     db.add(comment)
     db.commit()
-    db.refresh()
+    db.refresh(comment)
     return comment
 
