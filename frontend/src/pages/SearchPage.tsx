@@ -11,7 +11,7 @@ const SearchPage = () => {
                     Add
                 </Button>
             </div>
-            <div className="fixed min-h-screen right-0">
+            <div className="fixed h-screen right-0 flex flex-col">
                 <AddModel/>
             </div>
         </div>
