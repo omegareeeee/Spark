@@ -1,142 +1,145 @@
-# Connect Backend: Local Setup
+# Spark
 
-This guide gets the backend running on your machine so you can develop and test the frontend against it. Expect about 10 minutes.
+> TODO: one or two sentences on what Spark does and who it's for.
 
-## What you'll have when you're done
+Spark stores ideas and comments, embeds ideas as vectors, and clusters them so related ideas can be grouped and explored.
 
-- Postgres running locally on port **5433**
-- The backend API running locally on port **8000** (TODO: confirm)
-- The backend accepting requests from the frontend at `http://localhost:3000`
+## Tech stack
+
+| Layer | Tools |
+| --- | --- |
+| API | FastAPI, Uvicorn, Pydantic |
+| Database | PostgreSQL + [pgvector](https://github.com/pgvector/pgvector), SQLAlchemy, psycopg 3 |
+| Migrations | Alembic |
+| ML / clustering | NumPy, scikit-learn, UMAP, HDBSCAN, joblib |
+| LLMs | OpenAI, Anthropic |
+| Tooling | [uv](https://docs.astral.sh/uv/) for dependency management |
 
 ## Prerequisites
 
-Install these first:
+- Python 3.12 or 3.13 (a C compiler may be needed if `hdbscan` has no prebuilt wheel for your Python version; pinning 3.12 with `uv python pin 3.12` is the easy fix)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- Docker (for local Postgres), or any Postgres instance with the pgvector extension available
+- An OpenAI API key and an Anthropic API key
 
-- **Git**
-- **Docker** and Docker Compose (for the database)
-- **TODO: runtime**, e.g. Node 20+ or Python 3.11+
-- An **OpenAI API key** (ask me for the shared dev key, or create your own at https://platform.openai.com/api-keys)
+## Getting started
 
-## 1. Clone the repo
-
-```bash
-git clone TODO_REPO_URL
-cd TODO_REPO_NAME
-```
-
-## 2. Configure environment variables
-
-Copy the example file and fill in your values:
+### 1. Clone and install
 
 ```bash
-cp .env.example .env
+git clone git@github.com:omegareeeee/Spark.git
+cd Spark/backend
+uv sync
 ```
 
-Then open `.env` and set:
-
-| Variable | What it does | Notes |
-|---|---|---|
-| `DATABASE_URL` | Postgres connection string | Default works with the Docker setup below. Don't change unless you changed the compose file. |
-| `OPENAI_API_KEY` | Key used for LLM calls | **Required.** Never commit this. |
-| `LLM_MODEL` | Model name | Default `gpt-4o` is fine. |
-| `FRONTEND_ORIGIN` | Allowed CORS origin | Must match where your frontend runs. Default is `http://localhost:3000`. |
-
-> `.env` is gitignored. Only `.env.example` is committed.
-
-## 3. Start the database
+### 2. Start Postgres with pgvector
 
 ```bash
-docker compose up -d db
+docker run -d --name spark-db \
+  -e POSTGRES_USER=app \
+  -e POSTGRES_PASSWORD=app \
+  -e POSTGRES_DB=connect \
+  -p 5433:5432 \
+  pgvector/pgvector:pg16
 ```
 
-Check that it's healthy:
+### 3. Configure environment variables
 
-```bash
-docker compose ps
-```
-
-The database listens on host port **5433** (not the default 5432), so it won't clash with a Postgres you may already have installed.
-
-## 4. Install dependencies
-
-```bash
-# TODO: replace with the real command, e.g.
-# npm install
-# pip install -r requirements.txt
-```
-
-## 5. Run database migrations
-
-```bash
-# TODO: replace with the real command, e.g.
-# npm run migrate
-# alembic upgrade head
-```
-
-## 6. Start the backend
-
-```bash
-# TODO: replace with the real command, e.g.
-# npm run dev
-# uvicorn app.main:app --reload --port 8000
-```
-
-You should see the server start on `http://localhost:8000`.
-
-## 7. Verify it works
-
-```bash
-curl http://localhost:8000/health
-```
-
-TODO: confirm the health route. You should get a `200 OK` response.
-
-## 8. Point the frontend at it
-
-In the frontend's env file, set the API base URL to the backend, for example:
+Create `backend/.env` (it is gitignored, so never commit it):
 
 ```dotenv
-# TODO: use the real variable name your frontend expects
-API_URL=http://localhost:8000
+DATABASE_URL=postgresql+psycopg://app:app@localhost:5433/connect
+OPENAI_API_KEY=your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
 ```
 
-Then start the frontend as usual. It should be served from `http://localhost:3000`, which is what the backend allows by default. If you run the frontend on a different port, update `FRONTEND_ORIGIN` in the backend `.env` and restart the backend.
+A `backend/.env.example` with placeholder values should be committed so others know what to set.
+
+### 4. Run migrations
+
+```bash
+uv run alembic upgrade head
+```
+
+The initial migration enables the `vector` extension and creates the schema, including the `vector(384)` embedding column on `ideas`.
+
+### 5. Start the API
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+The API is served at http://localhost:8000 and interactive docs at http://localhost:8000/docs.
+
+> Adjust `app.main:app` if your entry point lives elsewhere.
+
+## Project structure
+
+```
+Spark/
+└── backend/
+    ├── app/                # FastAPI application (models, routes, DB session)
+    ├── migrations/         # Alembic environment and versions
+    ├── alembic.ini
+    ├── pyproject.toml
+    └── .env                # local secrets (gitignored)
+```
+
+> TODO: update to match the real layout, and add the frontend if there is one.
+
+## Database migrations
+
+Alembic is the only thing that should create or alter tables. Do not call `Base.metadata.create_all()`.
+
+```bash
+# After changing models: generate a migration
+uv run alembic revision --autogenerate -m "describe the change"
+
+# Always read the generated file before applying it.
+# Watch for unexpected drop_table / drop_column calls.
+
+# Apply
+uv run alembic upgrade head
+
+# Roll back one revision
+uv run alembic downgrade -1
+
+# Check that models and database agree
+uv run alembic check
+```
+
+Notes:
+
+- New model modules must be imported in `migrations/env.py`, or autogenerate will not see them and may try to drop their tables.
+- Migrations that use `Vector` columns need `import pgvector.sqlalchemy`. This is already in `script.py.mako`.
+- Vector indexes (HNSW / IVFFlat) are not detected by autogenerate; add them by hand in a dedicated migration.
+
+## Resetting the dev database
+
+This deletes all data:
+
+```bash
+psql postgresql://app:app@localhost:5433/connect \
+  -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+uv run alembic upgrade head
+```
 
 ## Troubleshooting
 
-**CORS errors in the browser console**
-`FRONTEND_ORIGIN` doesn't match the URL in your address bar. It must match exactly, including the port and `http` vs `https`. Restart the backend after changing it.
+| Problem | Fix |
+| --- | --- |
+| `No module named 'psycopg2'` | `DATABASE_URL` must start with `postgresql+psycopg://` so SQLAlchemy uses psycopg 3. |
+| `type "vector" does not exist` | Use the `pgvector/pgvector` image and make sure the migration runs `CREATE EXTENSION IF NOT EXISTS vector` first. |
+| `NameError: name 'pgvector' is not defined` in a migration | Add `import pgvector.sqlalchemy` to the migration file. |
+| Autogenerate wants to drop your tables | Your models are not imported in `env.py`, or the database has tables from outside Alembic. |
+| `zsh: no matches found: uvicorn[standard]` | Quote extras: `uv add "uvicorn[standard]"`. |
+| GitHub rejects a push for secrets | Remove the secret from history, rotate the key, and make sure `.env` is in `.gitignore`. |
 
-**`connection refused` on the database**
-Make sure the container is running (`docker compose ps`) and that `DATABASE_URL` uses port `5433`.
+## Security
 
-**Port 5433 already in use**
-Something else is using it. Stop that process, or change the host port in `docker-compose.yml` and update `DATABASE_URL` to match.
+- Never commit `.env` or API keys. If a key is ever pushed or exposed, revoke and rotate it immediately.
+- Keep `.env.example` limited to placeholder values.
 
-**LLM calls fail with 401 or "invalid API key"**
-Check that `OPENAI_API_KEY` is set in `.env` with no quotes or trailing spaces, then restart the backend.
+## License
 
-**Env changes don't take effect**
-The backend only reads `.env` on startup. Restart it.
-
-## Resetting your local database
-
-This wipes all local data:
-
-```bash
-docker compose down -v
-docker compose up -d db
-# then re-run migrations (step 5)
-```
-
-## Stopping everything
-
-```bash
-docker compose down
-```
-
-Stop the backend with `Ctrl+C` in its terminal.
-
-## Still stuck?
-
-Message me with the exact error and the command you ran.
+> TODO: add a license.
