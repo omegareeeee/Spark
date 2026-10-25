@@ -18,6 +18,22 @@ type ViewBox = {
 const ZOOM_IN_FACTOR = 0.95;
 const ZOOM_OUT_FACTOR = 1.05;
 
+const getFingerDistance = (touch1, touch2) => {
+    const finger1 = {
+        x: touch1.clientX,
+        y: touch1.clientY
+    };
+    const finger2 = {
+        x: touch2.clientX,
+        y: touch2.clientY
+    };
+
+    const dx = finger1.x - finger2.x;
+    const dy = finger1.y - finger2.y;
+
+    return Math.sqrt(dx*dx + dy*dy);
+}
+
 const SvgContainer = ({xMin, yMin, children, initial_zoom}: SvgContainerProp) => {
 
     const [viewBox, setViewBox] = useState<ViewBox>({
@@ -67,6 +83,53 @@ const SvgContainer = ({xMin, yMin, children, initial_zoom}: SvgContainerProp) =>
             })
         }
     };
+
+     function touchMove(event) {
+        event.preventDefault();
+        const touches = [...event.touches];
+        if (touches.length == 2) {
+            const finger1 = {
+                x: touches[0].clientX,
+                y: touches[0].clientY
+            };
+            const finger2 = {
+                x: touches[1].clientX,
+                y: touches[1].clientY
+            };
+
+            const midPointX = (finger1.x + finger2.x)/2;
+            const midPointY = (finger1.y + finger2.y)/2;
+            const startDis = fingerStartDis;
+            const distance = getFingerDistance(touches[0], touches[1]);
+            const zoomFactor = distance > startDis ? ZOOM_IN_FACTOR : ZOOM_OUT_FACTOR;
+            
+            const point = container.current.createSVGPoint();
+            point.x = midPointX;
+            point.y = midPointY;
+
+            const svgMidPoint = getSVGPoint({x: midPointX, y: midPointY});
+            const newHeight = viewBox.height*zoomFactor;
+            const newWidth = viewBox.width*zoomFactor;
+ 
+            setFingerStartDis(distance);
+            setViewBox({
+                xMin: svgMidPoint.x - (svgMidPoint.x - viewBox.xMin) * zoomFactor, 
+                yMin: svgMidPoint.y - (svgMidPoint.y - viewBox.yMin) * zoomFactor, 
+                width: newWidth,
+                height: newHeight
+            });
+        }
+    }
+
+    function touchStart(event) {
+        event.preventDefault();
+        const touches = [...event.touches];
+        if (touches.length == 2) {
+            const distance = getFingerDistance(touches[0], touches[1]);
+            setFingerStartDis(distance);
+        }
+        
+    }
     
     return (
         <svg
