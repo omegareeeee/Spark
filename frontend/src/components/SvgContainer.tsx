@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 
 type SvgContainerProp = {
@@ -22,10 +22,13 @@ const SvgContainer = ({xMin, yMin, children, initial_zoom}: SvgContainerProp) =>
         yMin: yMin,
         width: 4500 * initial_zoom,
         height: 4500 * initial_zoom
-    })
+    });
+
+    const container = useRef<SVGSVGElement | null>(null);
     
     return (
         <svg
+            ref={container}
             viewBox={`${viewBox.xMin} ${viewBox.yMin} ${viewBox.width} ${viewBox.height}`}
             preserveAspectRatio="xMidYMid meet"
             className="w-screen h-screen"
