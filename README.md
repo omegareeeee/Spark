@@ -12,7 +12,7 @@ Spark stores ideas and comments, embeds ideas as vectors, and clusters them so r
 | Database | PostgreSQL + [pgvector](https://github.com/pgvector/pgvector), SQLAlchemy, psycopg 3 |
 | Migrations | Alembic |
 | ML / clustering | NumPy, scikit-learn, UMAP, HDBSCAN, joblib |
-| LLMs | OpenAI, Anthropic |
+| LLMs | OpenAI |
 | Tooling | [uv](https://docs.astral.sh/uv/) for dependency management |
 
 ## Prerequisites
