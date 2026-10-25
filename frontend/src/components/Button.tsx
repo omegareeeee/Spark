@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 const Button = ({children}: {children: ReactNode}) => {
     return (
-        <button>
+        <button className="cursor-pointer">
             {children}
         </button>
     );
