@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useRef, useState, type ReactNode } from "react";
 
 
 type SvgContainerProp = {
@@ -25,6 +25,17 @@ const SvgContainer = ({xMin, yMin, children, initial_zoom}: SvgContainerProp) =>
     });
 
     const container = useRef<SVGSVGElement | null>(null);
+
+     const getSVGPoint = useCallback((point: {x: number, y: number}) => {
+        if (container.current) {
+            const p = container.current.createSVGPoint();
+            p.x = point.x;
+            p.y = point.y;
+            
+            return p.matrixTransform(container.current.getScreenCTM().inverse());
+        }
+
+    }, [container.current]);
     
     return (
         <svg
