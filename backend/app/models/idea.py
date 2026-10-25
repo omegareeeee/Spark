@@ -10,12 +10,13 @@ from app.db.base import Base
 class Idea(Base):
     __tablename__ = "ideas"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    person_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("people.id", ondelete="CASCADE"))
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    person_id: Mapped[UUID] = mapped_column(ForeignKey("person.id", ondelete="CASCADE"))
     text: Mapped[str] = mapped_column(Text)
     idea_embedding = mapped_column(Vector(EMBED_DIM))
     have_embedding = mapped_column(Vector(EMBED_DIM))
     need_embedding = mapped_column(Vector(EMBED_DIM))
+    github_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     x: Mapped[float | None]
     y: Mapped[float | None]
     cluster_id: Mapped[int | None] = mapped_column(ForeignKey("clusters.id"))

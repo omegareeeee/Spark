@@ -1,2 +1,14 @@
+# secrets
 .env
-backend/.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# os/editor
+.DS_Store
+.idea/
+.vscode/
