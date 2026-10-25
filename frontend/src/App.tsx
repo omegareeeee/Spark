@@ -1,8 +1,11 @@
+import { Route, Routes } from "react-router";
+import SearchPage from "./pages/SearchPage";
+
 const App = () => {
   return (
-    <>
-      Hello world
-    </>
+    <Routes>
+      <Route path="/" element={<SearchPage/>}/>
+    </Routes>
   );
 };
 
