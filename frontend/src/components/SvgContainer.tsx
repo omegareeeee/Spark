@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 
 type SvgContainerProp = {
@@ -131,6 +131,23 @@ const SvgContainer = ({xMin, yMin, children, initial_zoom}: SvgContainerProp) =>
         }
         
     }
+
+    useEffect(() => {
+        if (container.current) {
+            container.current.addEventListener("wheel", wheelZoom);
+            container.current.addEventListener("touchmove", touchMove);
+            container.current.addEventListener("touchstart", touchStart)
+        }
+
+        return () => {
+            if (container.current) {
+                container.current.removeEventListener("wheel", wheelZoom);
+                container.current.removeEventListener("touchmove", touchMove);
+                container.current.removeEventListener("touchstart", touchStart)
+            }
+                
+        }
+    }, [viewBox]);
     
     return (
         <svg
