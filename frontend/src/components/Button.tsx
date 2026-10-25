@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 type ButtonProp = {
     children: ReactNode,
     isDark?: boolean,
-    prop: ComponentProps<'button'>;
+    prop?: ComponentProps<'button'>;
 };
 
 
