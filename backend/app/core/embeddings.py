@@ -1,22 +1,8 @@
-import numpy as np
-from openai import OpenAI
-from app.core.config import EMBED_MODEL, EMBED_DIM
+from sentence_transformers import SentenceTransformer
 
-_client = OpenAI(timeout=20, max_retries=2)
+# Loads once when the app starts. The first run downloads ~90 MB.
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
-def embed(texts: list[str]) -> np.ndarray:
-    """Embed a batch of texts in one API call. Returns shape (len(texts), EMBED_DIM)."""
-    if not texts:
-        return np.empty((0, EMBED_DIM), dtype=np.float32)
-
-    # Empty strings make the API error, so swap in a placeholder.
-    cleaned = [t.strip() or "none" for t in texts]
-
-    res = _client.embeddings.create(model=EMBED_MODEL, input=cleaned)
-    vecs = np.array([d.embedding for d in res.data], dtype=np.float32)
-
-    assert vecs.shape[1] == EMBED_DIM, (
-        f"Embedding dim {vecs.shape[1]} != {EMBED_DIM}. "
-        "Update EMBED_DIM and the Vector(DIM) columns."
-    )
-    return vecs
+def embed(text: str) -> list[float]:
+    """Text in, list of 384 numbers out."""
+    return model.encode(text, normalize_embeddings=True).tolist()
