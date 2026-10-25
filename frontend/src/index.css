@@ -8,3 +8,8 @@
 body {
   background-color: #272827;
 }
+
+@theme {
+  --color-cream~90: #F5E9D4;
+  --color-dark~15: #272827;
+}
