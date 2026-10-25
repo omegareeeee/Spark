@@ -13,3 +13,5 @@ const UserInput = ({value, handleValueChange}: UserInputType) => {
         </div>
     );
 };
+
+export default UserInput;
