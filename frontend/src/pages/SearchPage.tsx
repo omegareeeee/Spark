@@ -1,3 +1,4 @@
+import AddModel from "../components/AddModel";
 import Button from "../components/Button";
 import SearchComp from "../components/SearchComp";
 
@@ -9,6 +10,9 @@ const SearchPage = () => {
                 <Button>
                     Add
                 </Button>
+            </div>
+            <div className="fixed min-h-screen right-0">
+                <AddModel/>
             </div>
         </div>
     );
