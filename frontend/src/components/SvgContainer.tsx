@@ -44,6 +44,7 @@ const SvgContainer = ({xMin, yMin, children, initial_zoom}: SvgContainerProp) =>
     });
 
     const container = useRef<SVGSVGElement | null>(null);
+    const [fingerStartDis, setFingerStartDis] = useState(0);
 
      const getSVGPoint = useCallback((point: {x: number, y: number}) => {
         if (container.current) {
