@@ -7,7 +7,7 @@ const SearchComp = () => {
     return (
         <div className="flex gap-[1rem]">
             <input
-                className="focus:outline-none p-[.5em] font-bold border-[.2em] rounded-[.5em] border-dark_15"
+                className="focus:outline-none p-[.5em] font-bold border-[.2em] rounded-[.5em] border-dark_15 w-[30rem]"
                 placeholder="Your idea"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
