@@ -5,6 +5,7 @@ import ChosenIdContext from "../contexts/ChosenIdContext";
 import UserInput from "./UserInput";
 import AddComment from "../utils/addComment";
 import fetchComments from "../utils/fetchComments";
+import IdeasContext from "../contexts/IdeasContext";
 
 export type Comment = {
     idea_id: string,
@@ -17,6 +18,7 @@ const IdeaDetails = ({title, author_name, created_at, description, github_url, i
     const chosenIdContext = useContext(ChosenIdContext);
     const [comments, setComments] = useState<Comment[]>([]);
     const [input, setInput] = useState("");
+    const ideasContext = useContext(IdeasContext);
 
     useEffect(() => {
         fetchComments(id)
@@ -74,6 +76,13 @@ const IdeaDetails = ({title, author_name, created_at, description, github_url, i
                                         const clone = structuredClone(comments);
                                         clone.unshift(comment);
                                         setComments(clone);
+                                        ideasContext?.handleIdeasChange(ideasContext.ideas.map(idea => {
+                                            const cl = structuredClone(idea);
+                                            if (cl.id === id) {
+                                                cl.comment_count = cl.comment_count + 1;
+                                            }
+                                            return cl;
+                                        }));
                                     }
                                 }
                             }

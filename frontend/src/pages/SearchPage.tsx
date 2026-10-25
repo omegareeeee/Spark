@@ -58,6 +58,19 @@ const SearchPage = () => {
 
     const nodes = useMemo(() => resolveOverlaps(ideas), [ideas]);
     
+    const LINK_DIST = 150;
+    const lines = useMemo(() => {
+        const result: { x1: number; y1: number; x2: number; y2: number }[] = [];
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const a = nodes[i], b = nodes[j];
+                if (Math.hypot(a.x - b.x, a.y - b.y) < LINK_DIST)
+                    result.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
+            }
+        }
+        return result;
+    }, [nodes]);
+
     useEffect(() => {
         if (showAddModal) {
             gsap.to(addModelContainer.current, {
@@ -92,6 +105,11 @@ const SearchPage = () => {
     }, []);
 
     return (
+        <IdeasContext
+                    value={
+                        ideaContext
+                    }
+                >
         <div>
             <div className="fixed left-1/2 -translate-x-1/2 top-[2rem] flex bg-cream_90 p-[1em] rounded-[1em] gap-[3rem]">
                 <SearchComp/>
@@ -107,15 +125,9 @@ const SearchPage = () => {
                 className="fixed right-0 translate-x-full flex flex-col h-screen"
                 ref={addModelContainer}
             >
-                <IdeasContext
-                    value={
-                        ideaContext
-                    }
-                >
                     <AddModel
                         closeModel={() => setShowAddModal(false)}
                 />
-                </IdeasContext>
             </div>
             <ChosenIdContext
                 value={chosenIdContext}
@@ -132,12 +144,20 @@ const SearchPage = () => {
                     yMin={0}
                     initial_zoom={0.5}
                 >
+                {lines.map(line => (
+                    <path
+                        stroke="#AAC2C4"
+                        strokeWidth={10}
+                        d={`M${line.x1} ${line.y1} L${line.x2} ${line.y2}`}
+                    />
+                ))}
                 {nodes.map(node => (
                     <Node {...node} key={node.id} r={node.r}/>
                 ))}
                 </SvgContainer>
             </ChosenIdContext>
         </div>
+        </IdeasContext>
     );
 };
 
