@@ -1,18 +1,48 @@
+import { useEffect, useRef, useState } from "react";
 import AddModel from "../components/AddModel";
 import Button from "../components/Button";
 import SearchComp from "../components/SearchComp";
+import gsap from "gsap";
 
 const SearchPage = () => {
+    const [showAddModal, setShowAddModal] = useState<boolean>(false);
+    const addModelContainer = useRef<HTMLDivElement | null>(null);
+    
+    useEffect(() => {
+        if (showAddModal) {
+            gsap.to(addModelContainer.current, {
+                x: "0",
+                ease: "power2.inOut"
+                
+            })
+        }
+        else {
+             gsap.to(addModelContainer.current, {
+                x: "100%",
+                ease: "power2.inOut"
+            })
+        }
+    }, [showAddModal]);
+
     return (
         <div>
             <div className="fixed left-1/2 -translate-x-1/2 top-[2rem] flex bg-cream_90 p-[1em] rounded-[1em] gap-[3rem]">
                 <SearchComp/>
-                <Button>
+                <Button
+                    prop={{
+                        onClick: () => setShowAddModal(true)
+                    }}
+                >
                     Add
                 </Button>
             </div>
-            <div className="fixed h-screen right-0 flex flex-col">
-                <AddModel/>
+            <div 
+                className="fixed right-0 translate-x-full flex flex-col h-screen"
+                ref={addModelContainer}
+            >
+               <AddModel
+                    closeModel={() => setShowAddModal(false)}
+               />
             </div>
         </div>
     );
