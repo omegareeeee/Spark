@@ -5,5 +5,5 @@ from app.db.base import Base
 class Cluster(Base):
     __tablename__ = "clusters"
 
-    id: Mapped[Integer] = mapped_column(primary_key=True, autoincrement=False)
-    label: Mapped[String] = mapped_column(String)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
+    label: Mapped[str] = mapped_column(String)
